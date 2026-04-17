@@ -56,9 +56,8 @@ export default function AdminResidentesPage() {
   // --------- Helpers de nombre/datos ---------
 
   const getNombreCompleto = (p: Persona) => {
-    return `${p.nombre} ${p.primer_apellido}${
-      p.segundo_apellido ? ` ${p.segundo_apellido}` : ""
-    }`;
+    return `${p.nombre} ${p.primer_apellido}${p.segundo_apellido ? ` ${p.segundo_apellido}` : ""
+      }`;
   };
 
   const formatResidencia = (p: Persona) => {
@@ -201,7 +200,7 @@ export default function AdminResidentesPage() {
     }
   };
 
- 
+
   // ================== Render ==================
 
   if (loading) {
@@ -244,31 +243,6 @@ export default function AdminResidentesPage() {
               Gestión de Fraccionamientos
             </span>
           </div>
-
-          {/* Navegación */}
-          <nav className="hidden md:flex items-center gap-5 text-sm text-slate-500">
-            <button
-              onClick={() => router.push("/admin")}
-              className="hover:text-slate-900"
-            >
-              Dashboard
-            </button>
-            <button className="font-semibold text-sky-600">
-              Residentes
-            </button>
-            <button
-              onClick={() => router.push("/admin/pagos")}
-              className="hover:text-slate-900"
-            >
-              Pagos
-            </button>
-            <button
-              onClick={() => router.push("/admin/avisos")}
-              className="hover:text-slate-900"
-            >
-              Comunicados
-            </button>
-          </nav>
 
           {/* Botón agregar + avatar dummy */}
           <div className="flex items-center gap-4">
@@ -386,7 +360,7 @@ export default function AdminResidentesPage() {
                   >
                     Editar
                   </button>
-                  
+
                 </div>
               </div>
             ))}
@@ -408,11 +382,10 @@ export default function AdminResidentesPage() {
               <button
                 disabled={page === 1}
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                className={`px-3 py-1 rounded-lg border text-xs ${
-                  page === 1
+                className={`px-3 py-1 rounded-lg border text-xs ${page === 1
                     ? "border-slate-200 text-slate-300"
                     : "border-slate-200 text-slate-600 hover:bg-slate-50"
-                }`}
+                  }`}
               >
                 Anterior
               </button>
@@ -421,11 +394,10 @@ export default function AdminResidentesPage() {
                   <button
                     key={p}
                     onClick={() => setCurrentPage(p)}
-                    className={`px-3 py-1 rounded-lg border text-xs ${
-                      p === page
+                    className={`px-3 py-1 rounded-lg border text-xs ${p === page
                         ? "bg-sky-600 border-sky-600 text-white"
                         : "border-slate-200 text-slate-600 hover:bg-slate-50"
-                    }`}
+                      }`}
                   >
                     {p}
                   </button>
@@ -436,11 +408,10 @@ export default function AdminResidentesPage() {
                 onClick={() =>
                   setCurrentPage((p) => Math.min(totalPages, p + 1))
                 }
-                className={`px-3 py-1 rounded-lg border text-xs ${
-                  page === totalPages
+                className={`px-3 py-1 rounded-lg border text-xs ${page === totalPages
                     ? "border-slate-200 text-slate-300"
                     : "border-slate-200 text-slate-600 hover:bg-slate-50"
-                }`}
+                  }`}
               >
                 Siguiente
               </button>
@@ -565,8 +536,8 @@ export default function AdminResidentesPage() {
                   {submitting
                     ? "Guardando..."
                     : editing
-                    ? "Guardar cambios"
-                    : "Crear residente"}
+                      ? "Guardar cambios"
+                      : "Crear residente"}
                 </button>
               </div>
             </form>
@@ -574,5 +545,25 @@ export default function AdminResidentesPage() {
         </div>
       )}
     </main>
+  );
+}
+
+type SidebarItemProps = {
+  label: string;
+  icon: string;
+  onClick?: () => void;
+};
+
+function SidebarItem({ label, icon, onClick }: SidebarItemProps) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50"
+    >
+      <span className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-semibold">
+        {icon}
+      </span>
+      <span>{label}</span>
+    </button>
   );
 }

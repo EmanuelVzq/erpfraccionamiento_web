@@ -62,6 +62,8 @@ export default function LoginPage() {
         router.push("/mesa_directiva");
       } else if (rolesLower.includes("residente")) {
         router.push("/residente");
+      } else if (rolesLower.includes("vigilante")) {
+        router.push("/vigilante");
       } else {
         throw new Error("El usuario no tiene un rol asignado.");
       }
