@@ -1,17 +1,78 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 export default function ContabilidadPage() {
   const router = useRouter();
 
+  const [periodo, setPeriodo] = useState("mes");
+  const [resumen, setResumen] = useState({
+    ingresos: 0,
+    ocupacion: 0,
+    morosidad: 0,
+  });
+  const [grafica, setGrafica] = useState<any[]>([]);
+
+  const API = "https://erpfraccionamiento-api.onrender.com";
+
+  // =========================
+  // RESUMEN
+  // =========================
+  const obtenerResumen = async (periodoSeleccionado: string) => {
+    try {
+      const res = await fetch(
+        `${API}/dashboard/resumen?periodo=${periodoSeleccionado}`
+      );
+
+      const data = await res.json();
+      setResumen(data);
+    } catch (error) {
+      console.error("Error resumen:", error);
+    }
+  };
+
+  // =========================
+  // GRAFICA
+  // =========================
+  const obtenerGrafica = async () => {
+    try {
+      const res = await fetch(`${API}/grafica?periodo=${periodo}`);
+
+      if (!res.ok) throw new Error("Error en API");
+
+      const data = await res.json();
+
+      const formateado = data.map((item: any) => ({
+        mes: item.mes?.slice(0, 7),
+        total: Number(item.total),
+      }));
+
+      setGrafica(formateado);
+    } catch (error) {
+      console.error("Error gráfica:", error);
+      setGrafica([]);
+    }
+  };
+
+  useEffect(() => {
+    obtenerResumen(periodo);
+    obtenerGrafica();
+  }, [periodo]);
+
   return (
     <main className="min-h-screen flex bg-slate-100 text-slate-900">
-      
-      {/*  CONTENIDO  */}
       <section className="flex-1 px-10 py-8">
         
-        {/* Header */}
+        {/* HEADER */}
         <header className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-semibold">Contabilidad</h1>
@@ -21,38 +82,90 @@ export default function ContabilidadPage() {
           </div>
 
           <div className="flex gap-2">
-            <button className="px-4 py-1.5 rounded-lg bg-sky-500 text-white text-sm">
+            <button
+              onClick={() => setPeriodo("mes")}
+              className={`px-4 py-1.5 rounded-lg text-sm ${
+                periodo === "mes"
+                  ? "bg-sky-500 text-white"
+                  : "bg-slate-200"
+              }`}
+            >
               Mes
             </button>
-            <button className="px-4 py-1.5 rounded-lg bg-slate-200 text-sm">
+
+            <button
+              onClick={() => setPeriodo("trimestre")}
+              className={`px-4 py-1.5 rounded-lg text-sm ${
+                periodo === "trimestre"
+                  ? "bg-sky-500 text-white"
+                  : "bg-slate-200"
+              }`}
+            >
               Trimestre
             </button>
-            <button className="px-4 py-1.5 rounded-lg bg-slate-200 text-sm">
+
+            <button
+              onClick={() => setPeriodo("semestre")}
+              className={`px-4 py-1.5 rounded-lg text-sm ${
+                periodo === "semestre"
+                  ? "bg-sky-500 text-white"
+                  : "bg-slate-200"
+              }`}
+            >
               Semestre
             </button>
           </div>
         </header>
 
-        {/* Tarjetas */}
+        {/* TARJETAS */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-          <Card title="Ingresos Totales" value="$1,500.00" extra="+12.5%" />
-          <Card title="Tasa de Ocupación" value="92%" extra="Estable" />
-          <Card title="Morosidad" value="3.5%" extra="+0.5%" />
+          <Card
+            title="Ingresos Totales"
+            value={`$${resumen.ingresos.toFixed(2)}`}
+          />
+
+          <Card
+            title="Tasa de Ocupación"
+            value={`${resumen.ocupacion.toFixed(1)}%`}
+          />
+
+          <Card
+            title="Morosidad"
+            value={`${resumen.morosidad.toFixed(1)}%`}
+          />
         </section>
 
-        {/* Gráfico */}
+        {/* GRAFICA */}
         <div className="bg-white rounded-2xl p-6 mt-8 shadow-sm border border-slate-200">
           <h2 className="font-semibold mb-2">Gráfico de Ingresos</h2>
           <p className="text-xs text-slate-500 mb-4">
-            Renta y mantenimiento mensual
+            Ingresos por periodo
           </p>
 
-          <div className="h-40 bg-slate-100 rounded-xl flex items-center justify-center">
-            <span className="text-slate-400 text-sm">Gráfica aquí</span>
+          <div className="w-full h-64 min-w-0">
+            {grafica.length === 0 ? (
+              <span className="text-slate-400 text-sm">
+                Sin datos disponibles
+              </span>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={grafica}>
+                  <XAxis dataKey="mes" />
+                  <YAxis />
+                  <Tooltip />
+                  <Line
+                    type="monotone"
+                    dataKey="total"
+                    stroke="#0ea5e9"
+                    strokeWidth={2}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </div>
 
-        {/* Tabla */}
+        {/* TABLA (placeholder) */}
         <div className="bg-white rounded-2xl p-6 mt-8 shadow-sm border border-slate-200">
           <h2 className="font-semibold mb-4">Detalle de Activos</h2>
 
@@ -75,31 +188,15 @@ export default function ContabilidadPage() {
             </tbody>
           </table>
         </div>
+
       </section>
     </main>
   );
 }
 
-type SidebarItemProps = {
-  label: string;
-  icon: string;
-  onClick?: () => void;
-};
-
-function SidebarItem({ label, icon, onClick }: SidebarItemProps) {
-  return (
-    <button
-      onClick={onClick}
-      className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50"
-    >
-      <span className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-semibold">
-        {icon}
-      </span>
-      <span>{label}</span>
-    </button>
-  );
-}
-
+// =========================
+// COMPONENTE CARD
+// =========================
 type CardProps = {
   title: string;
   value: string;
@@ -111,9 +208,7 @@ function Card({ title, value, extra }: CardProps) {
     <div className="bg-white rounded-2xl border border-slate-200 px-6 py-4 shadow-sm">
       <p className="text-xs text-slate-500 mb-1">{title}</p>
       <p className="text-2xl font-semibold">{value}</p>
-      {extra && (
-        <p className="text-xs mt-2 text-slate-500">{extra}</p>
-      )}
+      {extra && <p className="text-xs mt-2 text-slate-500">{extra}</p>}
     </div>
   );
 }
