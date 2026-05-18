@@ -262,6 +262,7 @@ export default function BoardDashboardPage() {
     { label: "Residentes", path: "/mesa_directiva/residentes" },
     { label: "Administración de pagos", path: "/mesa_directiva/pagos" },
     { label: "Áreas comunes", path: "/mesa_directiva/areas" },
+    { label: "Contabilidad", path: "/mesa_directiva/contabilidad" },
     { label: "Avisos", path: "/mesa_directiva/avisos" },
   ];
 
