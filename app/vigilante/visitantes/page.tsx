@@ -34,11 +34,17 @@ export default function VisitantesPage() {
       // 🔥 Endpoint ejemplo
       const res = await fetch(`${API}/visitas/validar/${codigo}`);
 
+      console.log("STATUS:", res.status);
+
+      const texto = await res.text();
+
+      console.log("RESPUESTA BACKEND:", texto);
+
       if (!res.ok) {
         throw new Error("Código inválido");
       }
 
-      const data = await res.json();
+      const data = JSON.parse(texto);
 
       setVisitante({
         nombre: data.nombre ?? "Visitante",
