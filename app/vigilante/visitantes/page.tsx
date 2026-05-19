@@ -17,7 +17,7 @@ export default function VisitantesPage() {
   const [visitante, setVisitante] = useState<Visitante | null>(null);
   const [success, setSuccess] = useState("");
 
-  const API = "https://erpfraccionamiento-api.onrender.com";
+  const API = "http://127.0.0.1:3002";
 
   const validarCodigo = async () => {
     if (!codigo.trim()) {
@@ -63,28 +63,83 @@ export default function VisitantesPage() {
   };
 
   const registrarEntrada = async () => {
-    try {
-      setLoading(true);
+  try {
 
-      // 🔥 Endpoint ejemplo
-      const res = await fetch(`${API}/visitas/entrada/${visitante?.qr}`,
-        {
-          method: "POST",
-        }
-      );
+    setLoading(true);
 
-      if (!res.ok) {
-        throw new Error("No se pudo registrar");
+    setError("");
+    setSuccess("");
+
+    const res = await fetch(
+      `${API}/visitas/entrada/${codigo}`,
+      {
+        method: "POST",
       }
+    );
 
-      setSuccess("Acceso autorizado correctamente 🚪");
-    } catch (err) {
-      console.error(err);
-      setError("Error al registrar acceso");
-    } finally {
-      setLoading(false);
+    console.log("STATUS REGISTRO:", res.status);
+
+    const texto = await res.text();
+
+    console.log("RESPUESTA REGISTRO:", texto);
+
+    if (!res.ok) {
+      throw new Error("No se pudo registrar");
     }
-  };
+
+    if (visitante?.estado.toLowerCase() === "pendiente") {
+
+  setVisitante({
+    ...visitante,
+    estado: "en_proceso",
+  });
+
+  setSuccess("Acceso autorizado correctamente 🚪");
+
+} else if (visitante?.estado.toLowerCase() === "en_proceso") {
+
+  setVisitante({
+    ...visitante,
+    estado: "finalizado",
+  });
+
+  setSuccess("Visita finalizada correctamente ✅");
+}
+
+  } catch (err) {
+
+    console.error(err);
+
+    setError("Error al registrar acceso");
+
+  } finally {
+
+    setLoading(false);
+  }
+};
+
+const abrirPlumilla = async () => {
+
+  try {
+
+    const res = await fetch(
+      `${API}/plumilla/abrir`,
+      {
+        method: "POST",
+      }
+    );
+
+    if (!res.ok) {
+      throw new Error();
+    }
+
+    alert("🚪 Plumilla abierta");
+
+  } catch {
+
+    alert("Error al abrir plumilla");
+  }
+};
 
   return (
     <section className="max-w-4xl mx-auto">
@@ -156,8 +211,10 @@ export default function VisitantesPage() {
 
               <span
                 className={`px-3 py-1 rounded-full text-sm ${
-                  visitante.estado.toLowerCase() === "autorizado"
+                  visitante.estado.toLowerCase() === "finalizado"
                     ? "bg-emerald-100 text-emerald-700"
+                    : visitante.estado.toLowerCase() === "en_proceso"
+                    ? "bg-sky-100 text-sky-700"
                     : "bg-yellow-100 text-yellow-700"
                 }`}
               >
@@ -183,12 +240,34 @@ export default function VisitantesPage() {
 
             {/* Botón */}
             <button
-              onClick={registrarEntrada}
-              disabled={loading}
-              className="mt-8 w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-semibold transition"
-            >
-              Autorizar acceso
-            </button>
+  onClick={registrarEntrada}
+  disabled={
+    loading ||
+    visitante.estado.toLowerCase() === "finalizado"
+  }
+  className={`mt-8 w-full text-white py-3 rounded-xl font-semibold transition ${
+    visitante.estado.toLowerCase() === "finalizado"
+      ? "bg-slate-400 cursor-not-allowed"
+      : visitante.estado.toLowerCase() === "en_proceso"
+      ? "bg-red-600 hover:bg-red-700"
+      : "bg-emerald-600 hover:bg-emerald-700"
+  }`}
+>
+  {
+    visitante.estado.toLowerCase() === "finalizado"
+      ? "Visita finalizada"
+      : visitante.estado.toLowerCase() === "en_proceso"
+      ? "Finalizar visita"
+      : "Autorizar acceso"
+  }
+</button>
+
+<button
+  onClick={abrirPlumilla}
+  className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold transition"
+>
+  Abrir plumilla
+</button>
 
           </div>
         )}
